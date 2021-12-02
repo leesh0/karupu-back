@@ -1,0 +1,117 @@
+schema {
+  query: KarupuQuery
+  mutation: KarupuMutation
+}
+
+"""Date with time (isoformat)"""
+scalar DateTime
+
+type KarupuMutation {
+  addProject(project: ProjectsInput!): Project!
+  editProject(id: Int!, body: ProjectsUpdateInput!): Project!
+}
+
+type KarupuQuery {
+  project(id: Int!): Project!
+  projects(offset: Int! = 0, limit: Int! = 30): [Project!]!
+  user(id: Int!): User!
+}
+
+type Project {
+  """"""
+  id: Int!
+
+  """"""
+  title: String!
+
+  """"""
+  createdAt: DateTime!
+
+  """"""
+  updatedAt: DateTime!
+  tags: [String!]
+  user: User!
+  images: [ProjectImages!]!
+
+  """"""
+  icon: String
+
+  """
+  BOT: Bot<br/>WEB: Webサービス<br/>SNS: SNS<br/>GAME: ゲーム<br/>DESKTOP: App/Desktop<br/>MOBILE: App/Mobile<br/>OS: OS<br/>SECURITY: Security<br/>ETC: etc
+  """
+  category: String
+
+  """"""
+  desc: String
+
+  """"""
+  homeUrl: String
+
+  """"""
+  repoUrl: String
+
+  """"""
+  readme: String
+}
+
+type ProjectImages {
+  """"""
+  id: Int!
+
+  """"""
+  url: String!
+}
+
+input ProjectsInput {
+  icon: String!
+  category: String!
+  title: String!
+  images: [String!] = null
+  tags: [String!] = null
+  desc: String = null
+  homeUrl: String = null
+  repoUrl: String = null
+  readme: String = null
+}
+
+input ProjectsUpdateInput {
+  icon: String = null
+  category: String = null
+  title: String = null
+  images: [String!] = null
+  tags: [String!] = null
+  desc: String = null
+  homeUrl: String = null
+  repoUrl: String = null
+  readme: String = null
+}
+
+type User {
+  """"""
+  id: Int!
+
+  """"""
+  email: String!
+
+  """"""
+  createdAt: DateTime!
+
+  """"""
+  lastLoggedIn: DateTime!
+  projects: [Project!]!
+
+  """"""
+  avatar: String
+
+  """"""
+  bio: String
+
+  """"""
+  username: String
+
+  """"""
+  nickname: String
+
+  """"""
+  onboarded: Boolean
+}

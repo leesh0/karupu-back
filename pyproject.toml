@@ -1,0 +1,145 @@
+[tool.poetry]
+authors = ["suumokr <notedev.jp@gmail.com>"]
+description = ""
+name = "backend"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+Authlib = "0.15.5"
+Jinja2 = "3.0.2"
+MarkupSafe = "2.0.1"
+Pillow = "8.4.0"
+PyJWT = "1.7.1"
+PyYAML = "5.4.1"
+Pygments = "2.10.0"
+SQLAlchemy = "1.4.26"
+SQLAlchemy-Utils = "0.37.9"
+Unidecode = "1.3.2"
+aerich = "0.5.8"
+aioboto3 = "9.2.2"
+aiobotocore = "1.4.2"
+aiofiles = "0.7.0"
+aiohttp = "3.8.0"
+aioitertools = "0.8.0"
+aiosignal = "1.2.0"
+aiosqlite = "0.17.0"
+anyio = "3.3.4"
+asgiref = "3.4.1"
+async-timeout = "4.0.0"
+asyncpg = "0.24.0"
+attrs = "21.2.0"
+bcrypt = "3.2.0"
+boto3 = "1.17.106"
+botocore = "1.20.106"
+cached-property = "1.5.2"
+cachetools = "4.2.4"
+certifi = "2021.10.8"
+cffi = "1.15.0"
+charset-normalizer = "2.0.7"
+click = "8.0.3"
+cryptography = "3.4.8"
+databases = "0.5.3"
+ddlparse = "1.10.0"
+dictdiffer = "0.9.0"
+dnspython = "2.1.0"
+ecdsa = "0.17.0"
+email-validator = "1.1.3"
+fastapi = "0.70.0"
+fastapi-jwt-auth = "0.5.0"
+frozenlist = "1.2.0"
+google-auth = "2.3.3"
+graphql-core = "3.1.6"
+greenlet = "1.1.2"
+h11 = "0.12.0"
+httpcore = "0.13.7"
+httptools = "0.2.0"
+httpx = "0.20.0"
+httpx-oauth = "0.4.0"
+idna = "3.3"
+iniconfig = "1.1.1"
+iso8601 = "0.1.16"
+itsdangerous = "2.0.1"
+jmespath = "0.10.0"
+loguru = "0.5.3"
+makefun = "1.12.1"
+multidict = "5.2.0"
+orjson = "3.6.4"
+packaging = "21.3"
+passlib = "1.7.4"
+pluggy = "1.0.0"
+py = "1.11.0"
+pyasn1 = "0.4.8"
+pyasn1-modules = "0.2.8"
+pycparser = "2.21"
+pydantic = "1.8.2"
+pyparsing = "3.0.6"
+pypika-tortoise = "0.1.1"
+pytest = "6.2.5"
+python = "^3.9"
+python-dateutil = "2.8.2"
+python-dotenv = "0.19.1"
+python-jose = "3.3.0"
+python-multipart = "0.0.5"
+pytz = "2021.3"
+requests = "2.26.0"
+rfc3986 = "1.5.0"
+rsa = "4.7.2"
+s3transfer = "0.4.2"
+sentinel = "0.3.0"
+six = "1.16.0"
+sniffio = "1.2.0"
+starlette = "0.16.0"
+strawberry-graphql = "0.85.1"
+toml = "0.10.2"
+tortoise-orm = "0.17.8"
+typing-extensions = "3.10.0.2"
+ujson = "4.2.0"
+unicode-slugify = "0.1.5"
+urllib3 = "1.26.7"
+uvicorn = "0.15.0"
+uvloop = "0.16.0"
+validators = "^0.18.2"
+watchgod = "0.7"
+websockets = "10.0"
+wrapt = "1.13.3"
+yarl = "1.7.2"
+
+[tool.poetry.dev-dependencies]
+Faker = "^9.8.3"
+asynctest = "^0.13.0"
+autoflake = "^1.4"
+black = "^21.11b1"
+flake8 = "^4.0.1"
+isort = "^5.10.1"
+mypy = "^0.910"
+pre-commit = "^2.15.0"
+pytest = {extras = ["all"], version = "^6.2.5"}
+pytest-asyncio = "^0.16.0"
+pytest-trio = "^0.7.0"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+
+[tool.black]
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.tox
+  | venv
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+''' 
+line-length = 99 # override black's default line-length
+
+[tool.isort]
+# make it compatible with black
+profile = "black"
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore:::.*third_party_package.module:123", "ignore:::.*another_module*"]
