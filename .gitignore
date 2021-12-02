@@ -147,3 +147,4 @@ migrations
 .flake8
 .vscode
 .pre-commit-config.yaml
+poetry.lock
