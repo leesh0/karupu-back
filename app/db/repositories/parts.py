@@ -8,7 +8,7 @@ from app.models.parts import (
 from tortoise.functions import Count
 
 
-class TeamRepository:
+class TeamPartRepository:
     _part = TeamPart
     _member = TeamMember
 

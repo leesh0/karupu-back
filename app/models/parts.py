@@ -21,6 +21,10 @@ class PartUpdateModel(PartBaseModel):
     id: UUID
 
 
-class MemberAcceptModel(GqlModel):
+class MemberEntryModel(GqlModel):
     part_id: UUID
+    user_id: UUID
+
+
+class MemberIdModel(GqlModel):
     id: UUID

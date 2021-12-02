@@ -6,6 +6,7 @@ from app.graphql.types import (
     Project,
     ProjectFeedback,
     Team,
+    TeamMember,
     TeamPart,
     User,
 )
@@ -70,7 +71,7 @@ async def load_team(tids):
 
 async def load_part_member(pids):
     objs = await models.TeamMember.list_in_bulk(pids, field_name="part_id")
-    return [[User(**obj.serialize()) for obj in objs[pid]] for pid in pids]
+    return [[TeamMember(**obj.serialize()) for obj in objs[pid]] for pid in pids]
 
 
 async def load_team_part(tids):

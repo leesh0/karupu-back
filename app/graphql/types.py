@@ -6,6 +6,7 @@ import strawberry
 from app.db.table import karupu as models
 from strawberry.types import Info
 from tortoise.expressions import Subquery
+from tortoise.functions import F
 
 
 @strawberry.type
@@ -128,8 +129,39 @@ class Team:
         return await info.context["team_tags_loader"].load(self.id)
 
     @strawberry.field
-    async def parts(self, info: Info) -> "List[TeamPart]":
+    async def parts(self, info: Info) -> List["TeamPart"]:
         return await info.context["team_part_loader"].load(self.id)
+
+    @strawberry.field
+    async def user(self, info: Info) -> "User":
+        return await info.context["user_loader"].load(self.user_id)
+
+
+@strawberry.experimental.pydantic.type(model=models.TeamPart.pydantic(), all_fields=True)
+class TeamPart:
+    team_id: strawberry.Private[UUID]
+
+    @strawberry.field
+    async def team(self, info: Info) -> "Team":
+        return await info.context["team_loader"].load(self.team_id)
+    
+    @strawberry.field
+    async def members(self, info:Info)->"TeamMember":
+
+
+@strawberry.experimental.pydantic.type(model=models.TeamMember.pydantic(), all_fields=True)
+class TeamMember:
+    team_id: strawberry.Private[UUID]
+    part_id: strawberry.Private[UUID]
+    user_id: strawberry.Private[int]
+
+    @strawberry.field
+    async def team(self, info: Info) -> "Team":
+        return await info.context["team_loader"].load(self.team_id)
+
+    @strawberry.field
+    async def part(self, info: Info) -> "TeamPart":
+        return await info.context["part_loader"].load(self.part_id)
 
     @strawberry.field
     async def user(self, info: Info) -> "User":

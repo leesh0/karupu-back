@@ -20,3 +20,15 @@ class TeamUpdateInput(TeamInput):
     title: Optional[str] = UNSET
     name: Optional[str] = UNSET
     readme: Optional[str] = UNSET
+
+
+@strawberry.input
+class PartInput:
+    name: str
+    desc: Optional[str] = UNSET
+    max_count: Optional[int] = UNSET
+
+
+@strawberry.input
+class PartUpdateInput(PartInput):
+    name: Optional[str] = UNSET
