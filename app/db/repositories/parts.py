@@ -25,7 +25,7 @@ class TeamPartRepository:
     @classmethod
     async def update(cls, part: PartUpdateModel) -> TeamPart:
         part_dict = part.dict(exclude={"id"}, exclude_unset=True)
-        part_og = await cls._part.get(part.id).annotate(members_count=Count("members"))
+        part_og = await cls._part.get(id=part.id).annotate(members_count=Count("members"))
 
         if part.max_count and part_og.members_count > part.max_count:
             raise ValueError("max_count is over members count")

@@ -58,6 +58,7 @@ class Project(GqlModel):
     home_url = fields.TextField(default=None, null=True, validators=[URL_VALIDATOR])
     repo_url = fields.TextField(default=None, null=True, validators=[URL_VALIDATOR])
     readme = fields.TextField(default=None, null=True)
+    views = fields.IntField(default=0)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
@@ -174,7 +175,7 @@ class Team(GqlModel):
     thumbnail = fields.TextField(default=None, null=True)
     open = fields.BooleanField(default=True)
     readme = fields.TextField()
-
+    views = fields.IntField(default=0)
     created_at = fields.DatetimeField(auto_now_add=True)
 
     async def add_tags(self, tags: typing.List[str]):
@@ -191,18 +192,17 @@ class Team(GqlModel):
         for _tag in add_tags:
             tags_map[_tag.text] = _tag
         await TeamTagManager.bulk_create(
-            [TeamTagManager(project=self, tag=tag) for _, tag in tags_map.items()]
+            [TeamTagManager(team=self, tag=tag) for _, tag in tags_map.items()]
         )
         return True
 
     async def edit_tags(self, new_tags: typing.List[str]):
-        all_tags = await TeamTagManager.filter(team=self).all()
-        to_delete = [tag.id for tag in all_tags if tag.text not in new_tags]
-        to_add = [n_tag for n_tag in new_tags if n_tag not in [tag.text for tag in all_tags]]
+        all_tags = await TeamTagManager.filter(team=self).select_related("tag").all()
+        to_delete = [tag.id for tag in all_tags if tag.tag.text not in new_tags]
+        to_add = [n_tag for n_tag in new_tags if n_tag not in [tag.tag.text for tag in all_tags]]
 
         if to_delete:
             await TeamTagManager.filter(tag_id__in=to_delete).delete()
-
         if to_add:
             await self.add_tags(to_add)
 

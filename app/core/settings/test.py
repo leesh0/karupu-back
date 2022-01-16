@@ -3,10 +3,12 @@ import logging
 from pydantic import PostgresDsn, SecretStr
 
 from app.core.settings.app import AppSettings
+from app.core.settings.base import AppEnvTypes
 
 
 class TestAppSettings(AppSettings):
     debug: bool = True
+    app_env: AppEnvTypes = AppEnvTypes.test
 
     title: str = "Test Karupu"
 

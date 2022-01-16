@@ -51,7 +51,7 @@ class AppSettings(BaseAppSettings):
 
     db_logging: bool = False
     db_logging_level: int = logging.DEBUG
-    db_loggers: Tuple[str, str] = ("db_client", "tortoise")
+    db_loggers: set = {"tortoise"}
     db_logging_fmt: logging.Formatter = logging.Formatter(
         fmt="%(asctime)s - %(name)s:%(lineno)d - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -79,10 +79,11 @@ class AppSettings(BaseAppSettings):
             logging_logger.handlers = [InterceptHandler(level=self.logging_level)]
 
         if self.db_logging:
+            handler = logging.StreamHandler(sys.stdout)
+            handler.setLevel(logging.DEBUG)
+            handler.setFormatter(self.db_logging_fmt)
             for db_logger in self.db_loggers:
                 logging_logger = logging.getLogger(db_logger)
-                handler = InterceptDBHandler(sys.stdout)
-                handler.setFormatter(self.db_logging_fmt)
                 logging_logger.setLevel(logging.DEBUG)
                 logging_logger.addHandler(handler)
 

@@ -103,6 +103,7 @@ watchgod = "0.7"
 websockets = "10.0"
 wrapt = "1.13.3"
 yarl = "1.7.2"
+aiocache = "^0.11.1"
 
 [tool.poetry.dev-dependencies]
 Faker = "^9.8.3"
@@ -116,6 +117,7 @@ pre-commit = "^2.15.0"
 pytest = {extras = ["all"], version = "^6.2.5"}
 pytest-asyncio = "^0.16.0"
 pytest-trio = "^0.7.0"
+factory-boy = "^3.2.1"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"

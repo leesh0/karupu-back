@@ -22,6 +22,8 @@ USER_NOT_FOUND = "存在しないユーザーです。"
 
 # About Team
 TEAM_NOT_FOUND = "存在しないチームです。"
+TEAM_YOUR_NOT_LEADER = "チームの修正権限がないです。"
+YOU_ARE_ALREADY_TEAM_MEMBER = "すでに所属されたチームです。"
 
 # permission Error
 PROJECT_ID_NOT_FOUND = "project idが確認できないです。"

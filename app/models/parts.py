@@ -23,7 +23,7 @@ class PartUpdateModel(PartBaseModel):
 
 class MemberEntryModel(GqlModel):
     part_id: UUID
-    user_id: UUID
+    user_id: int
 
 
 class MemberIdModel(GqlModel):

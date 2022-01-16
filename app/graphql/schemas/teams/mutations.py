@@ -4,6 +4,7 @@ import strawberry
 from app.db.repositories.parts import TeamPartRepository
 from app.db.repositories.teams import TeamRepository
 from app.graphql.permissions.authentication import IsAuthenticated
+from app.graphql.permissions.teams import IsNotTeamMember, IsTeamLeader
 from app.graphql.schemas.teams.inputs import (
     PartInput,
     PartUpdateInput,
@@ -19,6 +20,7 @@ from app.models.parts import (
     PartUpdateModel,
 )
 from app.models.teams import TeamCreateModel, TeamUpdateModel
+from slugify import slugify
 from strawberry.types import Info
 
 
@@ -29,14 +31,14 @@ class Mutation:
         auth = info.context["auth"]
         current_user = await auth.get_current_user()
         team_dict = input_dict(team)
-
-        create_model = TeamCreateModel(user=current_user, **team_dict)
+        team_slug = slugify(team.name, lower=True)
+        create_model = TeamCreateModel(user=current_user, slug=team_slug, **team_dict)
 
         created = await TeamRepository.create(create_model)
 
         return Team(**created.serialize())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    @strawberry.mutation(permission_classes=[IsAuthenticated, IsTeamLeader])
     async def edit_team(self, team_id: UUID, team: TeamUpdateInput, info: Info) -> Team:
         team_dict = input_dict(team)
 
@@ -46,11 +48,11 @@ class Mutation:
 
         return Team(**updated.serialize())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
-    async def delete_team(self, id: UUID) -> bool:
-        return await TeamRepository.delete(id)
+    @strawberry.mutation(permission_classes=[IsAuthenticated, IsTeamLeader])
+    async def delete_team(self, team_id: UUID) -> bool:
+        return await TeamRepository.delete(team_id)
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    @strawberry.mutation(permission_classes=[IsAuthenticated, IsTeamLeader])
     async def add_part(self, team_id: UUID, part: PartInput, info: Info) -> TeamPart:
         part_dict = input_dict(part)
 
@@ -60,7 +62,7 @@ class Mutation:
 
         return TeamPart(**created.serialize())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    @strawberry.mutation(permission_classes=[IsAuthenticated, IsTeamLeader])
     async def edit_part(self, part_id: UUID, part: PartUpdateInput, info: Info) -> TeamPart:
         part_dict = input_dict(part)
 
@@ -70,12 +72,12 @@ class Mutation:
 
         return TeamPart(**updated.serialize())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    @strawberry.mutation(permission_classes=[IsAuthenticated, IsTeamLeader])
     async def delete_part(self, part_id: UUID, info: Info) -> bool:
         return await TeamPartRepository.delete(part_id=part_id)
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
-    async def entry_member(self, part_id: UUID, info: Info) -> TeamMember:
+    @strawberry.mutation(permission_classes=[IsAuthenticated, IsNotTeamMember])
+    async def entry_member(self, part_id: UUID, info: Info) -> bool:
         auth = info.context["auth"]
         current_user = await auth.get_current_user()
 
@@ -83,12 +85,12 @@ class Mutation:
 
         created = await TeamPartRepository.entry_member(create_model)
 
-        return TeamMember(**created.serialize())
+        return bool(created)
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    @strawberry.mutation(permission_classes=[IsAuthenticated, IsTeamLeader])
     async def accept_member(self, member_id: UUID, info: Info) -> bool:
         return await TeamPartRepository.accept_member(MemberIdModel(id=member_id))
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    @strawberry.mutation(permission_classes=[IsAuthenticated, IsTeamLeader])
     async def delete_member(self, member_id: UUID, info: Info) -> bool:
         return await TeamPartRepository.delete_member(MemberIdModel(id=member_id))

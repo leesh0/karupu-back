@@ -3,7 +3,7 @@ from io import BytesIO
 from typing import IO, List
 from uuid import uuid4
 
-from app.core.config import get_app_settings
+from app.core.config import AppEnvTypes, get_app_settings
 from app.services.aws.config import session
 from fastapi import HTTPException
 from PIL import Image
@@ -42,9 +42,13 @@ async def to_io(file):
 
 
 async def upload_images(files: List[IO], path="images"):
+    base_url = f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com/"
+
     async with session.client("s3") as s3:
         try:
             fnames = [f"{path}/{uuid4()}.{file.filename.split('.')[-1]}" for file in files]
+            if settings.app_env != AppEnvTypes.prod:
+                return [base_url + fname for fname in fnames]
             freads = await asyncio.gather(*[file.read() for file in files])
             upload_futures = [
                 s3.upload_fileobj(
@@ -59,7 +63,6 @@ async def upload_images(files: List[IO], path="images"):
         except Exception as e:
             raise e
 
-        base_url = f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com/"
         return [base_url + fname for fname in fnames]
 
 

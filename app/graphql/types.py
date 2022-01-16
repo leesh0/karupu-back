@@ -3,10 +3,15 @@ from typing import List, Optional, Union
 from uuid import UUID
 
 import strawberry
-from app.db.table import karupu as models
+from strawberry.arguments import UNSET
 from strawberry.types import Info
 from tortoise.expressions import Subquery
-from tortoise.functions import F
+from tortoise.functions import Count, F
+from tortoise.query_utils import Q
+
+from app.db.repositories.projects import ProjectRepository
+from app.db.table import karupu as models
+from app.graphql.wrappers.pagination import ManyField
 
 
 @strawberry.type
@@ -33,10 +38,6 @@ class User:
     is_staff: strawberry.Private[bool]
     is_admin: strawberry.Private[bool]
 
-    @strawberry.field  # require pagination
-    async def projects(self, info: Info) -> Optional[List["Project"]]:
-        return await info.context["user_projects_loader"].load(self.id, info)
-
 
 @strawberry.experimental.pydantic.type(model=models.Project.pydantic(), all_fields=True)
 class Project:
@@ -53,6 +54,10 @@ class Project:
     @strawberry.field
     async def members(self, info: Info) -> Optional[List["User"]]:
         return await info.context["project_member_loader"].load(self.id)
+
+    @strawberry.field
+    async def feedbacks(self, info: Info, offset: int = 0, limit: int = 20) -> "ProjectFeedbacks":
+        return ProjectFeedbacks(id=self.id, offset=offset, limit=limit)
 
 
 @strawberry.experimental.pydantic.type(model=models.ProjectFeedback.pydantic(), all_fields=True)
@@ -72,6 +77,22 @@ class ProjectFeedback:
     @strawberry.field  # require pagination
     async def childs(self, info: Info) -> Optional[List["ChildProjectFeedback"]]:
         return await info.context["child_feedback_loader"].load(self.id)
+
+
+@strawberry.type
+class ProjectFeedbacks:
+    id: strawberry.Private[int]
+    offset: strawberry.Private[Optional[int]] = 0
+    limit: strawberry.Private[Optional[int]] = 20
+
+    @strawberry.field
+    async def total_count(self, info: Info) -> int:
+        return await info.context["project_feedbacks_count_loader"].load(self.id)
+
+    @strawberry.field
+    async def feedbacks(self, info: Info) -> List[ProjectFeedback]:
+        objs = await ProjectRepository.get_feedbacks(self.id, self.offset, self.limit)
+        return [ProjectFeedback(**obj.serialize()) for obj in objs]
 
 
 @strawberry.experimental.pydantic.type(model=models.ProjectFeedback.pydantic(), all_fields=True)
@@ -116,7 +137,7 @@ class TeamPart:
         return await info.context["team_loader"].load(self.team_id)
 
     @strawberry.field
-    async def members(self, info: Info) -> "List[User]":
+    async def members(self, info: Info) -> "List[TeamMember]":
         return await info.context["part_member_loader"].load(self.id)
 
 
@@ -144,9 +165,10 @@ class TeamPart:
     @strawberry.field
     async def team(self, info: Info) -> "Team":
         return await info.context["team_loader"].load(self.team_id)
-    
+
     @strawberry.field
-    async def members(self, info:Info)->"TeamMember":
+    async def members(self, info: Info) -> "TeamMember":
+        return await info.context["team_member_loader"].load(self.team_id)
 
 
 @strawberry.experimental.pydantic.type(model=models.TeamMember.pydantic(), all_fields=True)

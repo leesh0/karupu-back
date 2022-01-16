@@ -1,5 +1,7 @@
 from typing import Dict, List
 
+from tortoise.functions import Count
+
 from app.db.table import karupu as models
 from app.graphql.types import (
     ChildProjectFeedback,
@@ -59,6 +61,13 @@ async def load_feedback(pids):
     return [[ProjectFeedback(**obj.serialize()) for obj in objs[pid]] for pid in pids]
 
 
+async def load_feedbacks_count(pids):
+    objs = await models.Project.gql.annotate(count=Count("feedbacks")).in_bulk(
+        pids, field_name="id"
+    )
+    return [objs[pid].count for pid in pids]
+
+
 async def load_child_feedback(fids):
     objs = await models.ProjectFeedback.list_in_bulk(fids, field_name="parent_id")
     return [[ChildProjectFeedback(**obj.serialize()) for obj in objs[fid]] for fid in fids]
@@ -82,3 +91,8 @@ async def load_team_part(tids):
 async def load_part(pids):
     objs = await models.TeamPart.in_bulk(pids, field_name="id")
     return [TeamPart(**objs[pid].serialize()) for pid in pids]
+
+
+async def load_team_member(tids):
+    objs = await models.TeamMember.list_in_bulk(tids, field_name="team_id")
+    return [[TeamMember(**obj.serializer()) for obj in objs[tid]] for tid in tids]
