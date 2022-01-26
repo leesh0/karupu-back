@@ -12,13 +12,12 @@ T = TypeVar("T")
 
 
 @strawberry.type
-class ManyField(RuntimeGeneric, Generic[T]):
+class Pagination(RuntimeGeneric, Generic[T]):
     count: Optional[int] = None
     items: List[T] = None
 
     @classmethod
     async def paginate(cls, data: GqlQuerySet, offset: int = 0, limit: int = 30):
-        a = offset
         total_count = await data.total_count()
         rscs = await data.offset(offset).limit(limit)
         if not isinstance(rscs, list) and rscs:

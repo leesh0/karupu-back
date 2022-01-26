@@ -1,13 +1,15 @@
 from typing import Any, List, Optional
 
-from app.db.table.karupu import Categories, User
-from app.models.base import GqlModel
 from pydantic import HttpUrl
+
+from app.db.table.karupu import Categories, ProjectStatus, User
+from app.models.base import GqlModel
 
 
 class ProjectBaseModel(GqlModel):
     icon: Optional[Any]
     category: Categories
+    status: ProjectStatus
     title: str
     desc: Optional[str]
     home_url: Optional[HttpUrl]
@@ -15,6 +17,7 @@ class ProjectBaseModel(GqlModel):
     readme: Optional[str]
     tags: Optional[List[str]]
     members: Optional[List[str]]
+    images: Optional[List[Any]]
 
 
 class ProjectCreateModel(ProjectBaseModel):
@@ -23,5 +26,7 @@ class ProjectCreateModel(ProjectBaseModel):
 
 class ProjectUpdateModel(ProjectBaseModel):
     id: int
+    delete_image: Optional[str]
     category: Optional[Categories]
+    status: Optional[ProjectStatus]
     title: Optional[str]

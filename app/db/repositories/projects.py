@@ -60,6 +60,7 @@ class ProjectRepository:
         data_dict = body.dict(exclude_defaults=True)
         tags = data_dict.pop("tags", False)
         members = data_dict.pop("members", False)
+        images = data_dict.pop("images", False)
         # uplaod icon file
         if data_dict.get("icon"):
             icon = data_dict["icon"]
@@ -68,6 +69,9 @@ class ProjectRepository:
 
         obj: Project = cls._project(**data_dict)
         await obj.save()
+
+        if images:
+            await obj.add_images(images)
 
         if tags:
             await obj.add_tags(tags)
@@ -83,6 +87,8 @@ class ProjectRepository:
 
         tags = update_dict.pop("tags", False)
         members = update_dict.pop("members", False)
+        images = update_dict.pop("images", False)
+        delete_images = update_dict.pop("delete_images", False)
 
         # change icon if icon
         if update_dict.get("icon"):
@@ -93,6 +99,13 @@ class ProjectRepository:
             update_dict["icon"] = new_icon
 
         await cls._project.filter(id=body.id).update(**update_dict)
+
+        if images:
+            await og_project.add_images(images)
+
+        if delete_images:
+            await og_project.delete_image(delete_images)
+
         if tags:
             await og_project.edit_tags(tags)
 

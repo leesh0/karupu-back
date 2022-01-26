@@ -1,15 +1,18 @@
 import asyncio
 import typing
+from dataclasses import field
+from email.policy import default
 from enum import Enum
+
+from slugify import slugify
+from strawberry.file_uploads import Upload
+from tortoise import fields
 
 from app.db.table.auth import User
 from app.db.table.base import GqlModel
 from app.db.table.validators import URL_VALIDATOR
 from app.resources import strings
 from app.services.aws.uploader import delete_images, upload_images
-from slugify import slugify
-from strawberry.file_uploads import Upload
-from tortoise import fields
 
 
 class Categories(str, Enum):
@@ -24,13 +27,10 @@ class Categories(str, Enum):
     ETC: str = "etc"
 
 
-class TeamsCategory(str, Enum):
-    PLANNER: str = "企画"
-    DESIGNER: str = "デザイン"
-    FRONTEND: str = "frontend"
-    BACKEND: str = "backend"
-    MOBILE: str = "mobile"
-    ETC: str = "etc"
+class ProjectStatus(str, Enum):
+    RELEASED: str = "Released"
+    DEVELOPING: str = "Developing"
+    WANTED: str = "Wanted"
 
 
 class Tag(GqlModel):
@@ -53,6 +53,7 @@ class Project(GqlModel):
     )
     icon = fields.TextField(default=None, null=True, validators=[URL_VALIDATOR])
     category: Categories = fields.CharEnumField(Categories, default=Categories.WEB)
+    status: ProjectStatus = fields.CharEnumField(ProjectStatus, default=ProjectStatus.RELEASED)
     title = fields.CharField(max_length=100)
     desc = fields.CharField(max_length=400, default=None, null=True)
     home_url = fields.TextField(default=None, null=True, validators=[URL_VALIDATOR])
@@ -61,6 +62,26 @@ class Project(GqlModel):
     views = fields.IntField(default=0)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
+
+    async def add_image(self, image):
+        path = await upload_images([image], path="project-detail-images")
+        save = await ProjectImage.create(ProjectImage(project=self, storage=path))
+        return path
+
+    async def add_images(self, images: typing.List):
+        paths = await upload_images(images, path="project-detail-images")
+        save = await ProjectImage.bulk_create(
+            [ProjectImage(project=self, storage=path) for path in paths]
+        )
+        return paths
+
+    async def delete_image(self, image_id):
+        images = await ProjectImage.filter(id=image_id).all()
+        if images:
+            await delete_images([image.storage for image in images])
+            return True
+        else:
+            raise ValueError(f"image id {image_id} not found.")
 
     async def add_tags(self, tags: typing.List[str]):
         tags_map = {tag: None for tag in tags}
@@ -164,80 +185,9 @@ class ProjectTagManager(GqlModel):
     )
 
 
-class Team(GqlModel):
+class ProjectImage(GqlModel):
     id = fields.UUIDField(pk=True)
-    user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
-        "models.User", related_name="teams"
+    project: fields.ForeignKeyRelation[Project] = fields.ForeignKeyField(
+        "models.Project", related_name="images", on_delete="CASCADE"
     )
-    title = fields.CharField(max_length=300)
-    name = fields.CharField(max_length=200)
-    slug = fields.CharField(max_length=1000)
-    thumbnail = fields.TextField(default=None, null=True)
-    open = fields.BooleanField(default=True)
-    readme = fields.TextField()
-    views = fields.IntField(default=0)
-    created_at = fields.DatetimeField(auto_now_add=True)
-
-    async def add_tags(self, tags: typing.List[str]):
-        tags_map = {tag: None for tag in tags}
-        search_tags = await Tag.filter(text__in=tags_map.keys()).all()
-        for stag in search_tags:
-            tags_map[stag.text] = stag
-        add_tags = [Tag(text=tag_text) for tag_text, tag_obj in tags_map.items() if not tag_obj]
-        await Tag.bulk_create(add_tags)
-        add_tags = [
-            tag_obj
-            for tag_obj in await Tag.filter(text__in=[add_tag.text for add_tag in add_tags])
-        ]
-        for _tag in add_tags:
-            tags_map[_tag.text] = _tag
-        await TeamTagManager.bulk_create(
-            [TeamTagManager(team=self, tag=tag) for _, tag in tags_map.items()]
-        )
-        return True
-
-    async def edit_tags(self, new_tags: typing.List[str]):
-        all_tags = await TeamTagManager.filter(team=self).select_related("tag").all()
-        to_delete = [tag.id for tag in all_tags if tag.tag.text not in new_tags]
-        to_add = [n_tag for n_tag in new_tags if n_tag not in [tag.tag.text for tag in all_tags]]
-
-        if to_delete:
-            await TeamTagManager.filter(tag_id__in=to_delete).delete()
-        if to_add:
-            await self.add_tags(to_add)
-
-        return True
-
-
-class TeamTagManager(GqlModel):
-    id = fields.IntField(pk=True)
-    team: fields.ForeignKeyRelation[Team] = fields.ForeignKeyField(
-        "models.Team", related_name="tags", on_delete="CASCADE"
-    )
-    tag: fields.ForeignKeyRelation[Tag] = fields.ForeignKeyField(
-        "models.Tag", related_name="teams", on_delete=fields.SET_NULL, null=True
-    )
-
-
-class TeamPart(GqlModel):
-    id = fields.UUIDField(pk=True)
-    team: fields.ForeignKeyRelation[Team] = fields.ForeignKeyField(
-        "models.Team", related_name="parts", on_delete="CASCADE"
-    )
-    name = fields.CharField(max_length=100)
-    desc = fields.CharField(max_length=300, default=None, null=True)
-    max_count = fields.IntField(default=1)
-
-
-class TeamMember(GqlModel):
-    id = fields.UUIDField(pk=True)
-    team: fields.ForeignKeyRelation[Team] = fields.ForeignKeyField(
-        "models.Team", related_name="members", on_delete="CASCADE"
-    )
-    part: fields.ForeignKeyRelation["TeamPart"] = fields.ForeignKeyField(
-        "models.TeamPart", related_name="members", on_delete="CASCADE"
-    )
-    user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
-        "models.User", related_name="parts"
-    )
-    accepted = fields.BooleanField(default=False)
+    storage = fields.TextField()

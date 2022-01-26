@@ -1,12 +1,14 @@
 from uuid import UUID
 
 import strawberry
+from strawberry.types import Info
+
 from app.db.repositories.projects import ProjectRepository
 from app.db.table import karupu as models
 from app.graphql.permissions.authentication import IsAuthenticated
 from app.graphql.permissions.feedbacks import IsFeedbackAuthor
 from app.graphql.permissions.projects import IsProjectAuthor
-from app.graphql.schemas.projects.inputs import (
+from app.graphql.schemas.inputs.project import (
     ProjectFeedbackInput,
     ProjectFeedbackUpdateInput,
     ProjectsInput,
@@ -16,7 +18,6 @@ from app.graphql.types import Project, ProjectFeedback
 from app.graphql.utils import input_dict
 from app.models.feedbacks import CreateFeedbackModel, UpdateFeedbackModel
 from app.models.projects import ProjectCreateModel, ProjectUpdateModel
-from strawberry.types import Info
 
 
 @strawberry.type

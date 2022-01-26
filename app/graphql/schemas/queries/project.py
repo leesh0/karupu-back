@@ -11,7 +11,7 @@ from tortoise.query_utils import Prefetch
 from app.db.repositories.projects import ProjectCreateModel, ProjectRepository
 from app.db.table import karupu as models
 from app.graphql.types import Project, ProjectFeedback
-from app.graphql.wrappers.pagination import ManyField
+from app.graphql.wrappers.pagination import Pagination
 from tests.utils import get_random_image
 
 
@@ -32,7 +32,7 @@ class Query:
         order_by: str = "latest",
         offset: int = 0,
         limit: int = 30,
-    ) -> ManyField[Project]:
+    ) -> Pagination[Project]:
         options = {"username": username, "search": search, "order_by": order_by}
         query = ProjectRepository.gets(**options)
-        return await ManyField[Project].paginate(query, offset=offset, limit=limit)
+        return await Pagination[Project].paginate(query, offset=offset, limit=limit)

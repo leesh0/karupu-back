@@ -31,10 +31,8 @@ class Proxy:
 
 class RuntimeGeneric:
     def __class_getitem__(cls, key):
-        print("??? ", key)
         generic = super().__class_getitem__(key)
         if getattr(generic, "__origin__", None):
-            print(generic)
             return Proxy(generic)
         else:
             return generic

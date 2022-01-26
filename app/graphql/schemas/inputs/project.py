@@ -8,6 +8,7 @@ from strawberry.file_uploads import Upload
 @strawberry.input
 class ProjectsInput:
     category: str
+    status: str
     title: str
     icon: Optional[Upload] = UNSET
     desc: Optional[str] = UNSET
@@ -21,6 +22,7 @@ class ProjectsInput:
 @strawberry.input
 class ProjectsUpdateInput(ProjectsInput):
     category: Optional[str] = UNSET
+    status: Optional[str] = UNSET
     title: Optional[str] = UNSET
 
 

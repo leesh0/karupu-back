@@ -1,5 +1,6 @@
-from app.graphql.schemas import projects, teams, user
+from app.graphql.schemas.mutations import Mutation
+from app.graphql.schemas.queries import Query
 
-queries = (projects.Query, user.Query)
+queries = (Query,)
 
-mutations = (projects.Mutation, user.Mutation, teams.Mutation)
+mutations = (Mutation,)

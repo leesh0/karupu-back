@@ -71,7 +71,7 @@ py = "1.11.0"
 pyasn1 = "0.4.8"
 pyasn1-modules = "0.2.8"
 pycparser = "2.21"
-pydantic = "1.8.2"
+pydantic = {extras = ["dotenv"], version = "^1.9.0"}
 pyparsing = "3.0.6"
 pypika-tortoise = "0.1.1"
 pytest = "6.2.5"
@@ -104,6 +104,7 @@ websockets = "10.0"
 wrapt = "1.13.3"
 yarl = "1.7.2"
 aiocache = "^0.11.1"
+msgpack = "^1.0.3"
 
 [tool.poetry.dev-dependencies]
 Faker = "^9.8.3"
