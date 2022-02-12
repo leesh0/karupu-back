@@ -8,7 +8,7 @@ from app.db.table import karupu as models
 from app.graphql.permissions.authentication import IsAuthenticated
 from app.graphql.permissions.feedbacks import IsFeedbackAuthor
 from app.graphql.permissions.projects import IsProjectAuthor
-from app.graphql.schemas.inputs.project import (
+from app.graphql.schemas.project.inputs import (
     ProjectFeedbackInput,
     ProjectFeedbackUpdateInput,
     ProjectsInput,

@@ -16,7 +16,9 @@ from app.graphql.loaders.generator import GenLoader
 
 @strawberry.type
 class Tag:
-    tag: str
+    id: int
+    slug: str
+    text: str
 
 
 @strawberry.experimental.pydantic.type(model=models.User.pydantic())
@@ -39,14 +41,14 @@ class Project:
     user_id: strawberry.Private[int]
 
     @strawberry.field
-    async def tags(self, info: Info) -> Optional[List[str]]:
+    async def tags(self, info: Info) -> List[Tag]:
         return await (
             GenLoader.loader(
-                qs=models.ProjectTagManager.all().select_related("tag"),
+                qs=models.ProjectTagManager.gql.select_related("tag"),
                 field="project_id",
                 is_list=True,
-                factory=lambda x: {"tag": x.tag.text},
-                return_model=lambda x: x,
+                factory=lambda x: x.tag.serialize(),
+                return_model=lambda **kwargs: Tag(**kwargs),
             ).load(self.id)
         )
 

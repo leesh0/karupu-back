@@ -1,6 +1,19 @@
-from app.graphql.schemas.mutations import Mutation
-from app.graphql.schemas.queries import Query
+from . import project
 
-queries = (Query,)
 
-mutations = (Mutation,)
+def get_queries(services: list):
+    return tuple(serv.queries.Query for serv in services)
+
+
+def get_mutations(services: list):
+    return tuple(serv.mutations.Mutation for serv in services)
+
+
+servs = [
+    project,
+]
+
+
+queries = get_queries(servs)
+
+mutations = get_mutations(servs)

@@ -12,7 +12,7 @@ class DevAppSettings(AppSettings):
 
     logging_level: int = logging.DEBUG
 
-    db_logging: bool = True
+    db_logging: bool = False
 
     class Config(AppSettings.Config):
         env_file = "dev.env"

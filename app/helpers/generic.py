@@ -14,7 +14,6 @@ class Proxy:
         origin = self._generic.__origin__
         obj = getattr(origin, name)
         if inspect.ismethod(obj) and isinstance(obj.__self__, type):
-            obj.__func__(self, data="AAA", limit=10)
             return lambda *a, **kw: obj.__func__(self, *a, **kw)
         else:
             return obj
