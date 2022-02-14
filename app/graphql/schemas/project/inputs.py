@@ -8,8 +8,8 @@ from strawberry.file_uploads import Upload
 @strawberry.input
 class ProjectsInput:
     category: str
-    status: str
     title: str
+    status: Optional[str] = UNSET
     icon: Optional[Upload] = UNSET
     desc: Optional[str] = UNSET
     home_url: Optional[str] = UNSET

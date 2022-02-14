@@ -25,6 +25,7 @@ class TestProject(test.TestCase):
             "readme": "zzzzzzzz",
             "tags": ["test1", "test2", "test3"],
             "members": member_users,
+            "status": "released",
         }
         try:
             r = await gt.gql_execute_with_file(query_add_project, variables)
@@ -33,8 +34,8 @@ class TestProject(test.TestCase):
 
         data = r.json()["data"]
 
-        assert (
-            data and data["addProject"]["id"] and len(data["addProject"]["tags"]) == 3
+        self.assertEqual(
+            bool(data and data["addProject"]["id"]), len(data["addProject"]["tags"]) == 3
         ), "fail to test add project"
 
     async def test_edit_project(self):
@@ -53,13 +54,20 @@ class TestProject(test.TestCase):
             "readme": "test_readme",
             "tags": ["test1", "test2", "test3"],
             "members": member_users,
+            "status": "wanted",
         }
         try:
             r = await gt.gql_execute_with_file(query_edit_project, variables)
         except Exception:
             assert False, "fail to edit project"
         data = r.json()["data"]
-        assert data["editProject"].get("tags") == ["test1", "test2", "test3"], "edit failed"
+        print(">>>>", r.json())
+        assert [t["text"] for t in data["editProject"].get("tags")] == [
+            "test1",
+            "test2",
+            "test3",
+        ], "edit failed"
+        assert data["editProject"].get("status") == "wanted", "edit project failed"
 
     async def test_edit_project_one_field(self):
         plist = await Project.all().select_related("user")
@@ -74,7 +82,11 @@ class TestProject(test.TestCase):
         except Exception:
             assert False, "fail to edit project"
         data = r.json()["data"]
-        assert data["editProject"].get("tags") == ["test#1", "test#2", "test#3"], "edit failed"
+        assert [t["text"] for t in data["editProject"].get("tags")] == [
+            "test#1",
+            "test#2",
+            "test#3",
+        ], "edit failed"
 
     async def test_another_user_can_edit_project(self):
         project = await Project.filter(user__is_admin=False).first().select_related("user")

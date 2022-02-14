@@ -9,15 +9,14 @@ from app.models.base import GqlModel
 class ProjectBaseModel(GqlModel):
     icon: Optional[Any]
     category: Categories
-    status: ProjectStatus
     title: str
+    status: Optional[ProjectStatus]
     desc: Optional[str]
     home_url: Optional[HttpUrl]
     repo_url: Optional[HttpUrl]
     readme: Optional[str]
     tags: Optional[List[str]]
     members: Optional[List[str]]
-    images: Optional[List[Any]]
 
 
 class ProjectCreateModel(ProjectBaseModel):
@@ -26,7 +25,6 @@ class ProjectCreateModel(ProjectBaseModel):
 
 class ProjectUpdateModel(ProjectBaseModel):
     id: int
-    delete_image: Optional[str]
     category: Optional[Categories]
     status: Optional[ProjectStatus]
     title: Optional[str]

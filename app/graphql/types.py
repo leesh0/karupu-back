@@ -70,7 +70,7 @@ class Project:
     async def members(self, info: Info) -> Optional[List["User"]]:
         return await GenLoader.loader(
             return_model=User,
-            qs=models.ProjectMember.all().select_related("user"),
+            qs=models.ProjectMember.gql.select_related("user"),
             is_list=True,
             field="project_id",
             factory=lambda x: x.user.serialize(),
@@ -80,7 +80,7 @@ class Project:
     async def feedbacks(self, info: Info) -> "List[ProjectFeedback]":
         return await GenLoader.loader(
             return_model=ProjectFeedback,
-            qs=models.ProjectFeedback.filter(parent__isnull=True),
+            qs=models.ProjectFeedback.gql.filter(parent__isnull=True),
             is_list=True,
             field="id",
         ).load(self.id)
@@ -90,6 +90,7 @@ class Project:
 class ChildProjectFeedback:
     user_id: strawberry.Private[int]
     project_id: strawberry.Private[int]
+    parent_id: strawberry.Private[Union[None, int]]
 
     @strawberry.field
     async def user(self, info: Info) -> "User":
@@ -108,7 +109,7 @@ class ProjectFeedback(ChildProjectFeedback):
     async def childs(self, info: Info) -> Optional[List["ChildProjectFeedback"]]:
         return await GenLoader.loader(
             return_model=ChildProjectFeedback,
-            qs=models.ProjectFeedback,
+            qs=models.ProjectFeedback.gql,
             field="parent_id",
             is_list=True,
         ).load(self.id)

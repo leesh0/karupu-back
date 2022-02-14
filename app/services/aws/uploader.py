@@ -42,6 +42,10 @@ async def to_io(file):
     return f
 
 
+def get_s3_url(path):
+    return f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com/{path}"
+
+
 async def upload_images(files: Sequence[Union[IO, UploadFile]], path="images"):
     base_url = f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com/"
 
@@ -64,7 +68,7 @@ async def upload_images(files: Sequence[Union[IO, UploadFile]], path="images"):
         except Exception as e:
             raise e
 
-        return [base_url + fname for fname in fnames]
+        return fnames
 
 
 async def delete_images(urls: List[str]):

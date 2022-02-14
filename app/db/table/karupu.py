@@ -12,7 +12,7 @@ from app.db.table.auth import User
 from app.db.table.base import GqlModel
 from app.db.table.validators import URL_VALIDATOR
 from app.resources import strings
-from app.services.aws.uploader import delete_images, upload_images
+from app.services.aws.uploader import delete_images, get_s3_url, upload_images
 
 
 class Categories(str, Enum):
@@ -28,9 +28,9 @@ class Categories(str, Enum):
 
 
 class ProjectStatus(str, Enum):
-    RELEASED: str = "Released"
-    DEVELOPING: str = "Developing"
-    WANTED: str = "Wanted"
+    RELEASED: str = "released"
+    DEVELOPING: str = "developing"
+    WANTED: str = "wanted"
 
 
 class Tag(GqlModel):
@@ -51,7 +51,7 @@ class Project(GqlModel):
     user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User", related_name="projects"
     )
-    icon = fields.TextField(default=None, null=True, validators=[URL_VALIDATOR])
+    icon = fields.TextField(default=None, null=True)
     category: Categories = fields.CharEnumField(Categories, default=Categories.WEB)
     status: ProjectStatus = fields.CharEnumField(ProjectStatus, default=ProjectStatus.RELEASED)
     title = fields.CharField(max_length=100)
@@ -63,25 +63,12 @@ class Project(GqlModel):
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
-    async def add_image(self, image):
-        path = await upload_images([image], path="project-detail-images")
-        save = await ProjectImage.create(ProjectImage(project=self, storage=path))
+    async def set_icon(self, to_image):
+        if self.icon:
+            await delete_images(self.icon)
+        path = await upload_images([to_image], path="project-thumbnails")
+        self.icon = path
         return path
-
-    async def add_images(self, images: typing.List):
-        paths = await upload_images(images, path="project-detail-images")
-        save = await ProjectImage.bulk_create(
-            [ProjectImage(project=self, storage=path) for path in paths]
-        )
-        return paths
-
-    async def delete_image(self, image_id):
-        images = await ProjectImage.filter(id=image_id).all()
-        if images:
-            await delete_images([image.storage for image in images])
-            return True
-        else:
-            raise ValueError(f"image id {image_id} not found.")
 
     async def add_tags(self, tags: typing.List[str]):
         tags_map = {tag: None for tag in tags}
@@ -183,11 +170,3 @@ class ProjectTagManager(GqlModel):
     tag: fields.ForeignKeyRelation[Tag] = fields.ForeignKeyField(
         "models.Tag", related_name="projects"
     )
-
-
-class ProjectImage(GqlModel):
-    id = fields.UUIDField(pk=True)
-    project: fields.ForeignKeyRelation[Project] = fields.ForeignKeyField(
-        "models.Project", related_name="images", on_delete="CASCADE"
-    )
-    storage = fields.TextField()

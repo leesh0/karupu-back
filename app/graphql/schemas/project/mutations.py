@@ -28,8 +28,8 @@ class Mutation:
         req_user = await auth.get_current_user()
 
         project_data = input_dict(project)
-        arg_model = ProjectCreateModel(user=req_user, **project_data)
 
+        arg_model = ProjectCreateModel(user=req_user, **project_data)
         created = await ProjectRepository.create(arg_model)
         return Project(**created.serialize())
 
@@ -58,7 +58,6 @@ class Mutation:
 
         arg_model = CreateFeedbackModel(project=project, user=req_user, **feedback_data)
         created = await ProjectRepository.add_feedback(arg_model)
-
         return ProjectFeedback(**created.serialize())
 
     @strawberry.mutation(permission_classes=[IsAuthenticated, IsFeedbackAuthor])
