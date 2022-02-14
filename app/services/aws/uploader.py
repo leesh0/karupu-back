@@ -1,12 +1,13 @@
 import asyncio
 from io import BytesIO
-from typing import IO, List
+from typing import IO, List, Sequence, Union
 from uuid import uuid4
+
+from fastapi import HTTPException, UploadFile
+from PIL import Image
 
 from app.core.config import AppEnvTypes, get_app_settings
 from app.services.aws.config import session
-from fastapi import HTTPException
-from PIL import Image
 
 settings = get_app_settings()
 
@@ -41,7 +42,7 @@ async def to_io(file):
     return f
 
 
-async def upload_images(files: List[IO], path="images"):
+async def upload_images(files: Sequence[Union[IO, UploadFile]], path="images"):
     base_url = f"https://{settings.AWS_S3_BUCKET}.s3.amazonaws.com/"
 
     async with session.client("s3") as s3:
@@ -67,13 +68,9 @@ async def upload_images(files: List[IO], path="images"):
 
 
 async def delete_images(urls: List[str]):
-    check_urls = [url.split(AWS_BASE_URL) for url in urls]
-    target_urls = [url[1] for url in check_urls if len(url) > 1]
     async with session.client("s3") as s3:
         try:
-            deletes = [
-                s3.delete_object(Bucket="karupu", key=delete_key) for delete_key in target_urls
-            ]
+            deletes = [s3.delete_object(Bucket="karupu", key=delete_key) for delete_key in urls]
             await asyncio.gather(*deletes)
         except Exception:
             pass

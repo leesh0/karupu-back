@@ -1,32 +1,30 @@
-from typing import Awaitable, BinaryIO, List, Optional, Union
+from typing import Awaitable, List, Type
 from uuid import UUID
 
 from aiocache import cached
-from pypika import Field, PostgreSQLQuery, SQLLiteQuery, Table, Tables
 from slugify import slugify
-from strawberry.arguments import UNSET
 from tortoise.expressions import F
-from tortoise.functions import Avg, Coalesce, Count, Sum
+from tortoise.functions import Coalesce, Sum
 from tortoise.query_utils import Q
 
-from app.db.table.karupu import Categories, Project, ProjectFeedback, User
+from app.db.table.karupu import Project, ProjectFeedback
 from app.models.feedbacks import CreateFeedbackModel, UpdateFeedbackModel
 from app.models.projects import ProjectCreateModel, ProjectUpdateModel
 from app.services.aws.uploader import delete_images, upload_images
 
 
 class ProjectRepository:
-    _project: Project = Project
-    _feedback: ProjectFeedback = ProjectFeedback
+    _project: Type[Project] = Project
+    _feedback: Type[ProjectFeedback] = ProjectFeedback
 
     @classmethod
     @cached(ttl=60 * 10)  # 10min cached
-    async def view(cls, id: int, ip: str):
+    async def _view(cls, id: int, ip: str):
         return await cls._project.filter(id=id).update(views=F("views") + 1)
 
     @classmethod
     async def get(cls, id: int, ip: str):
-        cls.view(id, ip)
+        await cls._view(id, ip)
         return await cls._project.get_or_none(id=id)
 
     @classmethod
@@ -88,7 +86,7 @@ class ProjectRepository:
         tags = update_dict.pop("tags", False)
         members = update_dict.pop("members", False)
         images = update_dict.pop("images", False)
-        delete_images = update_dict.pop("delete_images", False)
+        delete_images_list = update_dict.pop("delete_images", False)
 
         # change icon if icon
         if update_dict.get("icon"):

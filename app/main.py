@@ -3,7 +3,7 @@ from fastapi_jwt_auth import AuthJWT
 from starlette.middleware.cors import CORSMiddleware
 from strawberry.fastapi import GraphQLRouter
 
-from app.api.routes import authentication
+from app.api.routes import authentication, uploader
 from app.core.config import get_app_settings
 from app.db.register import db_register
 from app.graphql import schema
@@ -28,6 +28,7 @@ def get_application() -> FastAPI:
     graphql_app = GraphQLRouter(schema, context_getter=get_context)
 
     application.include_router(authentication.router, prefix="/auth")
+    application.include_router(uploader.router, prefix="/api")
     application.include_router(graphql_app, prefix="/graphql")
     application.add_websocket_route("/graphql", graphql_app)
 

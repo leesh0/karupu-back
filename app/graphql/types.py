@@ -6,7 +6,7 @@ import strawberry
 from strawberry.arguments import UNSET
 from strawberry.types import Info
 from tortoise.expressions import Subquery
-from tortoise.functions import Count, F
+from tortoise.functions import Avg, Coalesce, Count, F
 from tortoise.query_utils import Q
 
 from app.db.repositories.projects import ProjectRepository
@@ -39,6 +39,16 @@ class User:
 @strawberry.experimental.pydantic.type(model=models.Project.pydantic(), all_fields=True)
 class Project:
     user_id: strawberry.Private[int]
+
+    @strawberry.field
+    async def rate_score(self, info: Info) -> float:
+        return await GenLoader.loader(
+            qs=models.Project.all().annotate(avg_score=Avg(Coalesce("feedbacks__rate_score", 0))),
+            field="id",
+            is_list=False,
+            factory=lambda x: {"score": x.avg_score},
+            return_model=lambda score: score,
+        ).load(self.id)
 
     @strawberry.field
     async def tags(self, info: Info) -> List[Tag]:

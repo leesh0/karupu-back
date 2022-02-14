@@ -1,10 +1,11 @@
+from tortoise.contrib import test
+
 from app.db.table.karupu import Project, User
 from app.main import get_application
 from app.resources import strings
 from tests.graphql.generator import GqlTest
 from tests.graphql.queries.projects import *
 from tests.utils import get_random_image
-from tortoise.contrib import test
 
 app = get_application()
 

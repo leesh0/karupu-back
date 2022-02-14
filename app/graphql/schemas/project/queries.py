@@ -20,7 +20,7 @@ class Query:
     @strawberry.field
     async def project(self, id: int, info: Info) -> Project:
         req_ip = info.context["depends"].req.client.host
-        pj = await ProjectRepository.view(id, req_ip)
+        pj = await ProjectRepository.get(id, req_ip)
         return Project(**pj.serialize())
 
     @strawberry.field
